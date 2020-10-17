@@ -12,7 +12,7 @@ import android.view.View
 import android.widget.TextView
 import java.lang.reflect.Field
 
-class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : TextView(context, attrs) {
+open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : TextView(context, attrs) {
 
     companion object {
         internal val TAG = AutoLinkTextView::class.java.simpleName
