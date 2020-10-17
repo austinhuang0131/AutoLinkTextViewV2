@@ -56,7 +56,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
         spanMap[mode] = spans.toHashSet()
     }
 
-    fun onAutoLinkClick(body: (AutoLinkItem) -> Unit) {
+    open fun onAutoLinkClick(body: (AutoLinkItem) -> Unit) {
         onAutoLinkClick = body
     }
 
