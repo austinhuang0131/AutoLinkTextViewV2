@@ -3,15 +3,11 @@ package io.github.armcha.autolink
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
-import android.graphics.Typeface.BOLD
 import android.text.DynamicLayout
 import android.text.SpannableString
 import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-import android.text.Spanned.SPAN_INCLUSIVE_INCLUSIVE
 import android.text.StaticLayout
 import android.text.style.CharacterStyle
-import android.text.style.ClickableSpan
-import android.text.style.StyleSpan
 import android.util.AttributeSet
 import android.view.View
 import android.widget.TextView
@@ -29,8 +25,8 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
     private val spanMap = mutableMapOf<Mode, HashSet<CharacterStyle>>()
     private val transformations = mutableMapOf<String, String>()
     private val modes = mutableSetOf<Mode>()
-    private var onAutoLinkClick: ((AutoLinkItem) -> Unit)? = null
-    private var onMentionOffsetClick: ((Pair<Int,Int>) -> Unit)? = null
+    private var onAutoLinkClick: OnAutoLinkClick? = null
+    private var onMentionOffsetClick: ((Pair<Int, Int>) -> Unit)? = null
     private var urlProcessor: ((String) -> String)? = null
 
     var pressedTextColor = Color.LTGRAY
@@ -49,7 +45,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
     /**
      * Mention color by offset
      * */
-    private val spanOffset = ArrayList<Pair<Int,Int>>()
+    private val spanOffset = ArrayList<Pair<Int, Int>>()
     private var mentionBackgroundColor: Int = 0
     private var mentionTextColor: Int = 0
     private var mentionCornerRadius: Float = 10f
@@ -57,9 +53,8 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
     private var mentionPaddingEnd: Float = 20f
     private var mentionMarginStart: Float = 20f
     private var mentionStyle: Typeface = Typeface.DEFAULT_BOLD
-    fun setMentionsByOffset(mentions:ArrayList<Pair<Int,Int>> = ArrayList(), backgroundColor: Int = 0, textColor: Int = 0, cornerRadius: Float = 10f, paddingStart: Float= 20f, paddingEnd: Float= 20f, marginStart: Float= 20f
-                            , mentionStyle:Typeface = Typeface.DEFAULT
-    ){
+    fun setMentionsByOffset(mentions: ArrayList<Pair<Int, Int>> = ArrayList(), backgroundColor: Int = 0, textColor: Int = 0, cornerRadius: Float = 10f, paddingStart: Float = 20f, paddingEnd: Float = 20f, marginStart: Float = 20f, mentionStyle: Typeface = Typeface.DEFAULT
+    ) {
         this.spanOffset.clear()
         this.spanOffset.addAll(mentions)
         this.mentionBackgroundColor = backgroundColor
@@ -90,11 +85,11 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
         spanMap[mode] = spans.toHashSet()
     }
 
-    open fun onAutoLinkClick(body: (AutoLinkItem) -> Unit) {
-        onAutoLinkClick = body
+    open fun onAutoLinkClick(callback: OnAutoLinkClick) {
+        onAutoLinkClick = callback
     }
 
-    fun onMentionOffsetClick(body: (Pair<Int,Int>) -> Unit) {
+    fun onMentionOffsetClick(body: (Pair<Int, Int>) -> Unit) {
         onMentionOffsetClick = body
     }
 
@@ -118,7 +113,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
 
             val clickableSpan = object : TouchableSpan(currentColor, pressedTextColor) {
                 override fun onClick(widget: View) {
-                    onAutoLinkClick?.invoke(autoLinkItem)
+                    onAutoLinkClick?.onClick(autoLinkItem)
                 }
             }
 
@@ -129,14 +124,14 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
         }
 
         spanOffset.forEach {
-            if(it.first>=0 && it.second <= text.length) {
-                val tagSpan = RoundedBackgroundSpan(mentionStyle,mentionBackgroundColor, mentionTextColor, mentionCornerRadius, mentionPaddingStart, mentionPaddingEnd, mentionMarginStart)
+            if (it.first >= 0 && it.second <= text.length) {
+                val tagSpan = RoundedBackgroundSpan(mentionStyle, mentionBackgroundColor, mentionTextColor, mentionCornerRadius, mentionPaddingStart, mentionPaddingEnd, mentionMarginStart)
                 spannableString.setSpan(tagSpan, it.first, it.second, SPAN_EXCLUSIVE_EXCLUSIVE)
-                spannableString.setSpan(object:TouchableSpan(mentionTextColor, mentionTextColor){
+                spannableString.setSpan(object : TouchableSpan(mentionTextColor, mentionTextColor) {
                     override fun onClick(widget: View) {
                         onMentionOffsetClick?.invoke(it)
                     }
-                }, it.first, it.second,SPAN_EXCLUSIVE_EXCLUSIVE)
+                }, it.first, it.second, SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
         return spannableString
@@ -187,7 +182,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
                     else -> {
                         val isUrl = it is MODE_URL
                         if (isUrl) {
-                            if(startPoint > 0) {
+                            if (startPoint > 0) {
                                 startPoint += 1
                             }
                             group = group.trimStart()
@@ -241,5 +236,9 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
         if (layout != null && field != null) {
             field.setInt(layout, Integer.MAX_VALUE)
         }
+    }
+
+    interface OnAutoLinkClick {
+        fun onClick(item: AutoLinkItem)
     }
 }

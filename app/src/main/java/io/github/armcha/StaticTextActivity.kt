@@ -49,11 +49,13 @@ class StaticTextActivity : AppCompatActivity() {
 
         autoLinkTextView.text = getString(R.string.android_text)
 
-        autoLinkTextView.onAutoLinkClick {
-            val message = if (it.originalText == it.transformedText) it.originalText
-            else "Original text - ${it.originalText} \n\nTransformed text - ${it.transformedText}"
-            val url = if (it.mode is MODE_URL) it.originalText else null
-            showDialog(it.mode.modeName, message, url)
-        }
+        autoLinkTextView.onAutoLinkClick(object : AutoLinkTextView.OnAutoLinkClick {
+            override fun onClick(item: AutoLinkItem) {
+                val message = if (item.originalText == item.transformedText) item.originalText
+                else "Original text - ${item.originalText} \n\nTransformed text - ${item.transformedText}"
+                val url = if (item.mode is MODE_URL) item.originalText else null
+                showDialog(item.mode.modeName, message, url)
+            }
+        })
     }
 }
