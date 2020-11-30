@@ -17,5 +17,5 @@ internal val EMAIL_PATTERN: Pattern = Pattern.compile(
                 "\\." +
                 "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
                 ")+")
-internal val MENTION_PATTERN: Pattern = Pattern.compile("(?:^|\\s*|$|[.])@[\\p{L}0-9_]*")
+internal val MENTION_PATTERN: Pattern = Pattern.compile("(?:^|\\s*|$|[.])@([\\p{L}0-9_](.|))*([\p{L}0-9])$")
 internal val HASH_TAG_PATTERN: Pattern = Pattern.compile("#[^\\s!@#\$%^&*()=+./,\\[{\\]};:'\"?><]+")
