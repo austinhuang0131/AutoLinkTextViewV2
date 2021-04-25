@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.text.style.StyleSpan
 import android.text.style.TypefaceSpan
 import android.text.style.UnderlineSpan
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import io.github.armcha.autolink.*
@@ -55,6 +56,12 @@ class StaticTextActivity : AppCompatActivity() {
                 else "Original text - ${item.originalText} \n\nTransformed text - ${item.transformedText}"
                 val url = if (item.mode is MODE_URL) item.originalText else null
                 showDialog(item.mode.modeName, message, url)
+            }
+        })
+
+        autoLinkTextView.onAutoLinkLongClick(object : AutoLinkTextView.OnAutoLinkLongClick {
+            override fun onLongClick(item: AutoLinkItem) {
+                Toast.makeText(this@StaticTextActivity, "Long Click", Toast.LENGTH_LONG).show()
             }
         })
     }

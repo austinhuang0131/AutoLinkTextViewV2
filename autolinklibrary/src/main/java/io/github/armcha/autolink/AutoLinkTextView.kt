@@ -25,6 +25,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
     private val transformations = mutableMapOf<String, String>()
     private val modes = mutableSetOf<Mode>()
     private var onAutoLinkClick: OnAutoLinkClick? = null
+    private var onAutoLinkLongClick: OnAutoLinkLongClick? = null
     private var urlProcessor: ((String) -> String)? = null
 
     var pressedTextColor = Color.LTGRAY
@@ -37,7 +38,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
 
     init {
         highlightColor = Color.TRANSPARENT
-        movementMethod = LinkTouchMovementMethod()
+        movementMethod = LinkTouchMovementMethod.instance
     }
 
     override fun setText(text: CharSequence, type: BufferType) {
@@ -61,6 +62,10 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
         onAutoLinkClick = callback
     }
 
+    open fun onAutoLinkLongClick(callback: OnAutoLinkLongClick) {
+        onAutoLinkLongClick = callback
+    }
+
     fun addUrlTransformations(vararg pairs: Pair<String, String>) {
         transformations.putAll(pairs.toMap())
     }
@@ -82,6 +87,10 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
             val clickableSpan = object : TouchableSpan(currentColor, pressedTextColor) {
                 override fun onClick(widget: View) {
                     onAutoLinkClick?.onClick(autoLinkItem)
+                }
+
+                override fun onLongClick(widget: View) {
+                    onAutoLinkLongClick?.onLongClick(autoLinkItem)
                 }
             }
 
@@ -200,5 +209,9 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
 
     interface OnAutoLinkClick {
         fun onClick(item: AutoLinkItem)
+    }
+
+    interface OnAutoLinkLongClick {
+        fun onLongClick(item: AutoLinkItem)
     }
 }
