@@ -35,7 +35,7 @@ repositories {
 
 publish {
     userOrg = 'armcha'
-    groupId = 'com.github.armcha'
+    groupId = 'io.github.armcha'
     artifactId = 'AutoLinkTextViewV2'
     publishVersion = '3.0.0'
     desc = 'AutoLinkTextViewV2'
