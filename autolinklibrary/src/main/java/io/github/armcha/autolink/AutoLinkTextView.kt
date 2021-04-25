@@ -2,7 +2,6 @@ package io.github.armcha.autolink
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Typeface
 import android.text.DynamicLayout
 import android.text.SpannableString
 import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -26,7 +25,6 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
     private val transformations = mutableMapOf<String, String>()
     private val modes = mutableSetOf<Mode>()
     private var onAutoLinkClick: OnAutoLinkClick? = null
-    private var onMentionOffsetClick: ((Pair<Int, Int>) -> Unit)? = null
     private var urlProcessor: ((String) -> String)? = null
 
     var pressedTextColor = Color.LTGRAY
@@ -38,35 +36,9 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
     var urlModeColor = DEFAULT_COLOR
 
     init {
-        movementMethod = LinkTouchMovementMethod()
         highlightColor = Color.TRANSPARENT
+        movementMethod = LinkTouchMovementMethod()
     }
-
-    /**
-     * Mention color by offset
-     * */
-    private val spanOffset = ArrayList<Pair<Int, Int>>()
-    private var mentionBackgroundColor: Int = 0
-    private var mentionTextColor: Int = 0
-    private var mentionCornerRadius: Float = 10f
-    private var mentionPaddingStart: Float = 20f
-    private var mentionPaddingEnd: Float = 20f
-    private var mentionMarginStart: Float = 20f
-    private var mentionStyle: Typeface = Typeface.DEFAULT_BOLD
-    fun setMentionsByOffset(mentions: ArrayList<Pair<Int, Int>> = ArrayList(), backgroundColor: Int = 0, textColor: Int = 0, cornerRadius: Float = 10f, paddingStart: Float = 20f, paddingEnd: Float = 20f, marginStart: Float = 20f, mentionStyle: Typeface = Typeface.DEFAULT
-    ) {
-        this.spanOffset.clear()
-        this.spanOffset.addAll(mentions)
-        this.mentionBackgroundColor = backgroundColor
-        mentionTextColor = textColor
-
-        mentionCornerRadius = cornerRadius
-        mentionPaddingStart = paddingStart
-        mentionPaddingEnd = paddingEnd
-        mentionMarginStart = marginStart
-        this.mentionStyle = mentionStyle
-    }
-
 
     override fun setText(text: CharSequence, type: BufferType) {
         if (text.isEmpty() || modes.isNullOrEmpty()) {
@@ -87,10 +59,6 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
 
     open fun onAutoLinkClick(callback: OnAutoLinkClick) {
         onAutoLinkClick = callback
-    }
-
-    fun onMentionOffsetClick(body: (Pair<Int, Int>) -> Unit) {
-        onMentionOffsetClick = body
     }
 
     fun addUrlTransformations(vararg pairs: Pair<String, String>) {
@@ -123,21 +91,10 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
             }
         }
 
-        spanOffset.forEach {
-            if (it.first >= 0 && it.second <= text.length) {
-                val tagSpan = RoundedBackgroundSpan(mentionStyle, mentionBackgroundColor, mentionTextColor, mentionCornerRadius, mentionPaddingStart, mentionPaddingEnd, mentionMarginStart)
-                spannableString.setSpan(tagSpan, it.first, it.second, SPAN_EXCLUSIVE_EXCLUSIVE)
-                spannableString.setSpan(object : TouchableSpan(mentionTextColor, mentionTextColor) {
-                    override fun onClick(widget: View) {
-                        onMentionOffsetClick?.invoke(it)
-                    }
-                }, it.first, it.second, SPAN_EXCLUSIVE_EXCLUSIVE)
-            }
-        }
         return spannableString
     }
 
-    private fun transformLinks(text: CharSequence, autoLinkItems: Set<AutoLinkItem>): String {
+    private fun transformLinks(text: CharSequence, autoLinkItems: List<AutoLinkItem>): String {
         if (transformations.isEmpty())
             return text.toString()
 
@@ -163,43 +120,46 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet? = null) : Tex
         return stringBuilder.toString()
     }
 
-    private fun matchedRanges(text: CharSequence): Set<AutoLinkItem> {
-        val autoLinkItems = mutableSetOf<AutoLinkItem>()
+    private fun matchedRanges(text: CharSequence): List<AutoLinkItem> {
+        val autoLinkItems = mutableListOf<AutoLinkItem>()
         modes.forEach {
-            val matcher = it.toPattern().matcher(text)
-            while (matcher.find()) {
-                var group = matcher.group()
-                var startPoint = matcher.start()
-                val endPoint = matcher.end()
-                when (it) {
-                    is MODE_PHONE -> {
-                        val digits = group.replace("[^0-9]".toRegex(), "")
-                        if (digits.length in MIN_PHONE_NUMBER_LENGTH..MAX_PHONE_NUMBER_LENGTH) {
-                            val item = AutoLinkItem(startPoint, endPoint, group, group, it)
+            val patterns = it.toPattern()
+            patterns.forEach { pattern ->
+                val matcher = pattern.matcher(text)
+                while (matcher.find()) {
+                    var group = matcher.group()
+                    var startPoint = matcher.start()
+                    val endPoint = matcher.end()
+                    when (it) {
+                        is MODE_PHONE -> {
+                            val digits = group.replace("[^0-9]".toRegex(), "")
+                            if (digits.length in MIN_PHONE_NUMBER_LENGTH..MAX_PHONE_NUMBER_LENGTH) {
+                                val item = AutoLinkItem(startPoint, endPoint, group, group, it)
+                                autoLinkItems.add(item)
+                            }
+                        }
+                        else -> {
+                            val isUrl = it is MODE_URL
+                            if (isUrl) {
+                                if (startPoint > 0) {
+                                    startPoint += 1
+                                }
+                                group = group.trimStart()
+                                if (urlProcessor != null) {
+                                    val transformedUrl = urlProcessor?.invoke(group) ?: group
+                                    if (transformedUrl != group)
+                                        transformations[group] = transformedUrl
+                                }
+                            }
+                            val matchedText = if (isUrl && transformations.containsKey(group)) {
+                                transformations[group] ?: group
+                            } else {
+                                group
+                            }
+                            val item = AutoLinkItem(startPoint, endPoint, group,
+                                    transformedText = matchedText, mode = it)
                             autoLinkItems.add(item)
                         }
-                    }
-                    else -> {
-                        val isUrl = it is MODE_URL
-                        if (isUrl) {
-                            if (startPoint > 0) {
-                                startPoint += 1
-                            }
-                            group = group.trimStart()
-                            if (urlProcessor != null) {
-                                val transformedUrl = urlProcessor?.invoke(group) ?: group
-                                if (transformedUrl != group)
-                                    transformations[group] = transformedUrl
-                            }
-                        }
-                        val matchedText = if (isUrl && transformations.containsKey(group)) {
-                            transformations[group] ?: group
-                        } else {
-                            group
-                        }
-                        val item = AutoLinkItem(startPoint, endPoint, group,
-                                transformedText = matchedText, mode = it)
-                        autoLinkItems.add(item)
                     }
                 }
             }

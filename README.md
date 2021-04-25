@@ -11,10 +11,10 @@ AutoLinkTextViewV2 is the new version of the [AutoLinkTextView][1].
 **It supports automatic detection and click handling for**
 * Hashtags (#)
 * Mentions (@) 
-* URLs (http://)
+* URLs (https://)
 * Phone Numbers
 * Emails
-* Custom Regex
+* Multiple Custom Regex
 
 .<img src="screens/static.png" width="400">
 <img src="screens/static_gif.gif" width="400">
@@ -39,7 +39,7 @@ The current minSDK version is API level 16.
 
 Gradle:
 ```groovy
-implementation 'com.github.armcha:AutoLinkTextViewV2:2.1.1'
+implementation 'com.github.armcha:AutoLinkTextViewV2:3.0.0'
 ```
 
 ### Setup and Usage
@@ -130,10 +130,10 @@ All possible modes
 
 <img src="screens/custom.png" width="400">
 
-For use of custom mode add custom regex
+For use of custom mode you can add multiple custom regex
 
 ```kotlin
-val custom = MODE_CUSTOM("\\sAndroid\\b")
+val custom = MODE_CUSTOM("\\sAndroid\\b", "\\sGoogle\\b")
 ```
 -------------------------
 You can change text color for the specific mode
@@ -151,21 +151,18 @@ autoLinkTextView.pressedTextColor = ContextCompat.getColor(this, R.color.pressed
 
 :arrow_forward:  **Email**: chatikyana@gmail.com
 
-:arrow_forward:  **Linkedin**: https://www.linkedin.com/in/chatikyan
+:arrow_forward:  **LinkedIn**: https://www.linkedin.com/in/chatikyan
 
 :arrow_forward:  **Medium**: https://medium.com/@chatikyan
 
-:arrow_forward:  **Twitter**: https://twitter.com/ArmanChatikyan
-
-:arrow_forward:  **Website**: https://armcha.github.io/
-
+:arrow_forward:  **Twitter**: https://twitter.com/ChatikyanArman
 
 License
 --------
 
 
       Auto Link TextView V2 library for Android
-      Copyright (c) 2019 Arman Chatikyan (https://github.com/armcha/AutoLinkTextViewV2).
+      Copyright (c) 2021 Arman Chatikyan (https://github.com/armcha/AutoLinkTextViewV2).
 
       Licensed under the Apache License, Version 2.0 (the "License");
       you may not use this file except in compliance with the License.
