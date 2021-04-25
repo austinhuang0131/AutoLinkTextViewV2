@@ -1,7 +1,9 @@
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
-apply plugin: 'com.github.panpf.bintray-publish'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group='com.github.ammargitham'
 
 android {
     compileSdkVersion 30
@@ -33,11 +35,11 @@ repositories {
     mavenCentral()
 }
 
-publish {
-    userOrg = 'armcha'
-    groupId = 'io.github.armcha'
-    artifactId = 'AutoLinkTextViewV2'
-    publishVersion = '3.0.0'
-    desc = 'AutoLinkTextViewV2'
-    website = 'https://github.com/armcha/AutoLinkTextViewV2'
-}
+//publish {
+//    userOrg = 'armcha'
+//    groupId = 'io.github.armcha'
+//    artifactId = 'AutoLinkTextViewV2'
+//    publishVersion = '3.0.0'
+//    desc = 'AutoLinkTextViewV2'
+//    website = 'https://github.com/armcha/AutoLinkTextViewV2'
+//}
